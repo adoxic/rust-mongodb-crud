@@ -3,6 +3,8 @@ use std::env;
 use std::error::Error;
 use tokio;
 
+//Practice typing out the Rust Crud Tutorial by Mark Smith https://developer.mongodb.com/quickstart/rust-crud-tutorial/
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // Load the MongoDB connection string from an env variable:
@@ -28,6 +30,49 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let insert_result = movies.insert_one(new_doc.clone(), None).await?;
     println!("New document ID: {}", insert_result.inserted_id);
+
+    // Get the movie
+    let movie = movies
+        .find_one(
+            doc! {
+                    "title": "Parasite"
+            },
+            None,
+        ).await?
+        .expect("Missing 'Parasite' document.");
+    println!("Movie: {}", movie);
+
+    // Update the document:
+    let update_result = movies.update_one(
+        doc! {
+            "_id": &insert_result.inserted_id,
+        },
+        doc! {
+            "$set": { "year": 2019 }
+        },
+        None,
+    ).await?;
+    println!("Updated {} document", update_result.modified_count);
+
+    // Look up the document again to confirm it's been updated:
+    let movie = movies
+        .find_one(
+        doc! {
+                "_id": &insert_result.inserted_id,
+        },
+        None,
+        ).await?
+        .expect("Missing 'Parasite' document.");
+    println!("Updated Movie: {}", &movie);
+
+    // Delete all documents for movies called "Parasite":
+    let delete_result = movies.delete_many(
+        doc! {
+        "title": "Parasite"
+        },
+        None,
+    ).await?;
+    println!("Deleted {} documents", delete_result.deleted_count);
 
     Ok(())
 }
