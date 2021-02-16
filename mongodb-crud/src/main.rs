@@ -17,5 +17,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
         println!("- {}", name);
     }
 
+    let new_doc = doc! {
+        "title": "Parasite",
+        "year": 2020,
+        "plot": "A poor family, the Kims, con their way into becoming the servants of a rich family, the Parks. But their easy life gets complicated when their deception is threatened with exposure.",
+    };
+
+    // Get the 'Movies' collection:
+    let movies = client.database("sample_mflix").collection("movies");
+
+    let insert_result = movies.insert_one(new_doc.clone(), None).await?;
+    println!("New document ID: {}", insert_result.inserted_id);
+
     Ok(())
 }
